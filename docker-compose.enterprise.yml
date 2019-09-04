@@ -1,16 +1,11 @@
 version: '2'
 services:
 
-    # subsitute services with 'enterprise' versions
-    mender-deployments:
-        image: mendersoftware/deployments-enterprise:master
-
-    mender-conductor:
-        image: mendersoftware/mender-conductor-enterprise:1.4.x
-
-    # add services
-    mender-tenantadm:
-        image: mendersoftware/tenantadm:master
+    #
+    # mender-deployments-enterprise
+    #
+    mender-deployments-enterprise:
+        image: mendersoftware/deployments-enterprise:1.7.x
         extends:
             file: common.yml
             service: mender-base
@@ -18,62 +13,20 @@ services:
             - mender
         depends_on:
             - mender-mongo
-        environment:
-            TENANTADM_CONDUCTOR_ADDR: http://mender-conductor:8080
 
-    mender-org-welcome-email-preparer:
-        image: mendersoftware/org-welcome-email-preparer:master
+    #
+    # mender-useradm-enterprise
+    #
+    mender-useradm-enterprise:
+        image: mendersoftware/useradm-enterprise:1.8.x
         extends:
             file: common.yml
             service: mender-base
         networks:
             - mender
         depends_on:
-            - mender-conductor
-        environment:
-            CONDUCTOR: "http://mender-conductor:8080"
+            - mender-mongo
 
-    mender-email-sender:
-        image: mendersoftware/email-sender:1.4.x
-        extends:
-            file: common.yml
-            service: mender-base
-        networks:
-            - mender
-        depends_on:
-            - mender-conductor
-        environment:
-            CONDUCTOR: "http://mender-conductor:8080"
-            DEMO: "true"
-
-    # add service aliases
-    mender-mongo:
-        networks:
-            mender:
-                aliases:
-                    - mongo-tenantadm
-                    - mongo-deployments
-                    - mongo-device-auth
-                    - mongo-inventory
-                    - mongo-useradm
-
-    # configure the rest
-    mender-device-auth:
-        environment:
-            DEVICEAUTH_TENANTADM_ADDR: 'http://mender-tenantadm:8080'
-
-    mender-useradm:
-        image: mendersoftware/useradm-enterprise:master
-        environment:
-            USERADM_TENANTADM_ADDR: 'http://mender-tenantadm:8080'
-
-    mender-api-gateway:
-        environment:
-            HAVE_MULTITENANT: 1
-
-    mender-gui:
-        environment:
-            HAVE_MULTITENANT: 1
 
 networks:
     mender:
